@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+    environment {
+        KUBECONFIG = '/var/lib/jenkins/.kube/config'
+        KUBECTL = '/usr/local/bin/kubectl'
+    }
+
     stages {
         stage('Checkout') {
             steps {
@@ -33,15 +38,34 @@ pipeline {
                 '''
             }
         }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                sh '''
+                    ${KUBECTL} apply -f kubernetes/deployment.yaml
+                    ${KUBECTL} apply -f kubernetes/service.yaml
+                '''
+            }
+        }
+
+        stage('Verify Kubernetes Deployment') {
+            steps {
+                sh '''
+                    ${KUBECTL} rollout status deployment/cloud-native-devops
+                    ${KUBECTL} get pods
+                    ${KUBECTL} get services
+                '''
+            }
+        }
     }
 
     post {
         success {
-            echo 'CI pipeline completed successfully!'
+            echo 'CI/CD pipeline completed successfully!'
         }
 
         failure {
-            echo 'CI pipeline failed. Check the stage logs.'
+            echo 'CI/CD pipeline failed. Check the stage logs.'
         }
     }
 }
