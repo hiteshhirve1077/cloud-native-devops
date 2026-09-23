@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloud-native-devops
+  labels:
+    app: cloud-native-devops
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cloud-native-devops
+  template:
+    metadata:
+      labels:
+        app: cloud-native-devops
+    spec:
+      containers:
+        - name: cloud-native-devops
+          image: localhost/cloud-native-devops:1.0
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5000
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
