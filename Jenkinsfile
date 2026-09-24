@@ -5,7 +5,7 @@ pipeline {
         KUBECONFIG = '/var/lib/jenkins/.kube/config'
         KUBECTL = '/usr/local/bin/kubectl'
         DOCKERHUB_USERNAME = 'hgreen1077'
-        IMAGE_NAME = "${hgreen1077}/cloud-native-devops"
+        IMAGE_NAME = "hgreen1077/cloud-native-devops"
     }
 
     stages {
