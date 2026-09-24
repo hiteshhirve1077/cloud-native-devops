@@ -9,7 +9,8 @@ spec:
   selector:
     app: cloud-native-devops
   ports:
-    - protocol: TCP
+    - name: http
+      protocol: TCP
       port: 5000
       targetPort: 5000
       nodePort: 30080
