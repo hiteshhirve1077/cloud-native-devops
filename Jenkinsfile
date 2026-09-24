@@ -80,7 +80,30 @@ pipeline {
             }
         }
     }
+	
+	stage('Deploy to Kubernetes') {
+            steps {
+        	sh '''
+                   ${KUBECTL} apply -f kubernetes/deployment.yaml
+                   ${KUBECTL} apply -f kubernetes/service.yaml
 
+                   ${KUBECTL} set image deployment/cloud-native-devops \
+                   cloud-native-devops=${IMAGE_NAME}:${BUILD_NUMBER}
+
+                   ${KUBECTL} rollout status deployment/cloud-native-devops
+               '''
+    	    }
+        }  
+
+	stage('Verify Kubernetes Deployment') {
+            steps {
+                sh '''
+                   ${KUBECTL} get deployment cloud-native-devops
+                   ${KUBECTL} get pods -o wide
+                   ${KUBECTL} get services
+              '''
+            }
+        }  
     post {
         success {
             echo 'CI pipeline and Docker Hub image push completed successfully!'
