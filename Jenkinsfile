@@ -4,6 +4,8 @@ pipeline {
     environment {
         KUBECONFIG = '/var/lib/jenkins/.kube/config'
         KUBECTL = '/usr/local/bin/kubectl'
+        DOCKERHUB_USERNAME = 'hgreen1077'
+        IMAGE_NAME = "${hgreen1077}/cloud-native-devops"
     }
 
     stages {
@@ -34,26 +36,46 @@ pipeline {
         stage('Build Container Image') {
             steps {
                 sh '''
-                    podman build -t cloud-native-devops:${BUILD_NUMBER} .
+                    podman build \
+                      -t ${IMAGE_NAME}:${BUILD_NUMBER} \
+                      -t ${IMAGE_NAME}:latest \
+                      .
                 '''
             }
         }
 
-        stage('Deploy to Kubernetes') {
+        stage('Login to Docker Hub') {
+            steps {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub-credentials',
+                        usernameVariable: 'REGISTRY_USERNAME',
+                        passwordVariable: 'REGISTRY_TOKEN'
+                    )
+                ]) {
+                    sh '''
+                        set +x
+                        echo "${REGISTRY_TOKEN}" | podman login docker.io \
+                            --username "${REGISTRY_USERNAME}" \
+                            --password-stdin
+                    '''
+                }
+            }
+        }
+
+        stage('Push Image to Docker Hub') {
             steps {
                 sh '''
-                    ${KUBECTL} apply -f kubernetes/deployment.yaml
-                    ${KUBECTL} apply -f kubernetes/service.yaml
+                    podman push ${IMAGE_NAME}:${BUILD_NUMBER}
+                    podman push ${IMAGE_NAME}:latest
                 '''
             }
         }
 
-        stage('Verify Kubernetes Deployment') {
+        stage('Logout from Docker Hub') {
             steps {
                 sh '''
-                    ${KUBECTL} rollout status deployment/cloud-native-devops
-                    ${KUBECTL} get pods
-                    ${KUBECTL} get services
+                    podman logout docker.io || true
                 '''
             }
         }
@@ -61,11 +83,11 @@ pipeline {
 
     post {
         success {
-            echo 'CI/CD pipeline completed successfully!'
+            echo 'CI pipeline and Docker Hub image push completed successfully!'
         }
 
         failure {
-            echo 'CI/CD pipeline failed. Check the stage logs.'
+            echo 'Pipeline failed. Check the stage logs.'
         }
     }
 }
