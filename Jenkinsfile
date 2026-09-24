@@ -1,3 +1,4 @@
+
 pipeline {
     agent any
 
@@ -5,7 +6,7 @@ pipeline {
         KUBECONFIG = '/var/lib/jenkins/.kube/config'
         KUBECTL = '/usr/local/bin/kubectl'
         DOCKERHUB_USERNAME = 'hgreen1077'
-        IMAGE_NAME = "hgreen1077/cloud-native-devops"
+        IMAGE_NAME = 'hgreen1077/cloud-native-devops'
     }
 
     stages {
@@ -79,34 +80,35 @@ pipeline {
                 '''
             }
         }
-    }
-	
-	stage('Deploy to Kubernetes') {
-            steps {
-        	sh '''
-                   ${KUBECTL} apply -f kubernetes/deployment.yaml
-                   ${KUBECTL} apply -f kubernetes/service.yaml
 
-                   ${KUBECTL} set image deployment/cloud-native-devops \
-                   cloud-native-devops=${IMAGE_NAME}:${BUILD_NUMBER}
-
-                   ${KUBECTL} rollout status deployment/cloud-native-devops
-               '''
-    	    }
-        }  
-
-	stage('Verify Kubernetes Deployment') {
+        stage('Deploy to Kubernetes') {
             steps {
                 sh '''
-                   ${KUBECTL} get deployment cloud-native-devops
-                   ${KUBECTL} get pods -o wide
-                   ${KUBECTL} get services
-              '''
+                    ${KUBECTL} apply -f kubernetes/deployment.yaml
+                    ${KUBECTL} apply -f kubernetes/service.yaml
+
+                    ${KUBECTL} set image deployment/cloud-native-devops \
+                        cloud-native-devops=${IMAGE_NAME}:${BUILD_NUMBER}
+
+                    ${KUBECTL} rollout status deployment/cloud-native-devops
+                '''
             }
-        }  
+        }
+
+        stage('Verify Kubernetes Deployment') {
+            steps {
+                sh '''
+                    ${KUBECTL} get deployment cloud-native-devops
+                    ${KUBECTL} get pods -o wide
+                    ${KUBECTL} get services
+                '''
+            }
+        }
+    }
+
     post {
         success {
-            echo 'CI pipeline and Docker Hub image push completed successfully!'
+            echo 'CI/CD pipeline completed successfully!'
         }
 
         failure {
