@@ -16,8 +16,8 @@ spec:
     spec:
       containers:
         - name: cloud-native-devops
-          image: localhost/cloud-native-devops:1.0
-          imagePullPolicy: Never
+          image: hgreen1077/cloud-native-devops:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 5000
           readinessProbe:
