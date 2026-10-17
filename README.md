@@ -1,7 +1,7 @@
 # Cloud-Native DevOps Project
 
 A learning project implementing a CI/CD platform with Flask, Docker, Jenkins,
-Kubernetes, Terraform, AWS, Prometheus, Grafana, and security scanning.
+Kubernetes, Prometheus, Grafana, and security scanning.
 
 ## Run locally
 
